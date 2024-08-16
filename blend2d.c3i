@@ -1,0 +1,163 @@
+module blend2d;
+
+// --------
+// Types
+// --------
+def BLResult = CUInt;
+const BLResult BL_SUCCESS = 0;
+
+
+def BLObjectDetail = CChar[16];
+def BLArrayCore = void;
+
+
+struct BLSizeI {
+  CInt w;
+  CInt h;
+}
+
+struct BLImageCore {
+    BLObjectDetail data;
+}
+struct BLImageData {
+    void* pixelData;
+    // intptr_t stride;
+    CLongLong stride;
+    BLSizeI size;
+    CUInt format;
+    CUInt flags;
+}
+distinct BLImageDecoderCore = void;
+distinct BLImageEncoderCore = void;
+
+def BLFormat = CUInt;
+const BLFormat BL_FORMAT_NONE = 0;
+const BLFormat BL_FORMAT_PRGB32 = 1;
+const BLFormat BL_FORMAT_XRGB32 = 2;
+const BLFormat BL_FORMAT_A8 = 3;
+
+struct BLImageCodecCore {
+    BLObjectDetail data;
+}
+
+distinct BLPixelConverterCore = void;
+
+/// Geometry
+struct BLRect {
+    double x;
+    double y;
+    double w;
+    double h;
+}
+
+struct BLRectI {
+  CInt x;
+  CInt y;
+  CInt w;
+  CInt h;
+}
+
+struct BLPointI {
+    int x;
+    int y;
+}
+
+/// rgba
+struct BLRgba {
+    float r;
+    float g;
+    float b;
+    float a;
+}
+
+/// context
+struct BLContextCore {
+    BLObjectDetail data;
+}
+
+distinct BLContextCreateFlags = CUInt;
+const BLContextCreateFlags BL_CONTEXT_CREATE_NO_FLAGS = 0;
+const BLContextCreateFlags BL_CONTEXT_CREATE_FLAG_DISABLE_JIT = 0x00000001;
+const BLContextCreateFlags BL_CONTEXT_CREATE_FLAG_FALLBACK_TO_SYNC = 0x00100000;
+const BLContextCreateFlags BL_CONTEXT_CREATE_FLAG_ISOLATED_THREAD_POOL = 0x01000000;
+const BLContextCreateFlags BL_CONTEXT_CREATE_FLAG_ISOLATED_JIT_RUNTIME = 0x02000000;
+const BLContextCreateFlags BL_CONTEXT_CREATE_FLAG_ISOLATED_JIT_LOGGING = 0x04000000;
+const BLContextCreateFlags BL_CONTEXT_CREATE_FLAG_OVERRIDE_CPU_FEATURES = 0x08000000;
+
+
+struct BLContextCreateInfo {
+    BLContextCreateFlags flags;
+    CUInt threadCount;
+    CUInt cpuFeatures;
+    CUInt commandQueueLimit;
+    CUInt savedStateLimit;
+    BLPointI pixelOrigin;
+    CUInt[1] reserved;
+}
+
+
+
+/// -----------------------------
+///       Imaging
+/// -----------------------------
+
+module blend2d::image;
+
+// BL_API BLResult BL_CDECL blImageInit(BLImageCore* self) BL_NOEXCEPT_C;
+extern fn BLResult init(BLImageCore* image) @extern("blImageInit");
+
+// BL_API BLResult BL_CDECL blImageInitAs(BLImageCore* self, int w, int h, BLFormat format) BL_NOEXCEPT_C;
+extern fn BLResult init_as(BLImageCore* image, CInt w, CInt h, BLFormat format) @extern("blImageInitAs");
+
+// BL_API BLResult BL_CDECL blImageDestroy(BLImageCore* self) BL_NOEXCEPT_C;
+extern fn BLResult destroy(BLImageCore* image) @extern("blImageDestroy");
+
+// BL_API BLResult BL_CDECL blImageCreate(BLImageCore* self, int w, int h, BLFormat format) BL_NOEXCEPT_C;
+extern fn BLResult create(BLImageCore* image, CInt w, CInt h, BLFormat format) @extern("blImageCreate");
+
+// BL_API BLResult BL_CDECL blImageWriteToFile(const BLImageCore* self, const char* fileName, const BLImageCodecCore* codec) BL_NOEXCEPT_C;
+extern fn BLResult write_to_file(BLImageCore* image, ZString fileName, BLImageCodecCore* codec) @extern("blImageWriteToFile");
+
+// BLResult blImageGetData(const BLImageCore* self, BLImageData* dataOut)
+extern fn BLResult get_data(BLImageCore* image, BLImageData* dataOut) @extern("blImageGetData");
+
+
+// --------
+// BLImageCodec 
+// --------
+
+module blend2d::image_codec;
+
+// BLResult blImageCodecInit(BLImageCodecCore* self)
+extern fn BLResult init(BLImageCodecCore* codec) @extern("blImageCodecInit");
+
+// BLResult blImageCodecFindByExtension(BLImageCodecCore* self, const char* name, size_t size, const BLArrayCore* codecs)
+extern fn BLResult find_by_extension(BLImageCodecCore* codec, ZString name, usz name_size, BLArrayCore* codecs) @extern("blImageCodecFindByExtension");
+
+
+
+/// -----------------------------
+///       Rendering Context
+/// -----------------------------
+module blend2d::context;
+
+// BLResult blContextInit(BLContextCore* self)
+extern fn BLResult init(BLContextCore* context) @extern("blContextInit");
+
+// BLResult blContextDestroy(BLContextCore* self)
+extern fn BLResult destroy(BLContextCore* context) @extern("blContextDestroy");
+
+// BLResult blContextBegin(BLContextCore* self, BLImageCore* image, const BLContextCreateInfo* cci)
+extern fn BLResult begin(BLContextCore* context, BLImageCore* image, BLContextCreateInfo* cci) @extern("blContextBegin");
+
+// BLResult blContextEnd(BLContextCore* self)
+extern fn BLResult end(BLContextCore* context) @extern("blContextEnd");
+
+// BLResult blContextFillAll(BLContextCore* self)
+extern fn BLResult fill_all(BLContextCore* context) @extern("blContextFillAll");
+
+// BLResult blContextFillRectI(BLContextCore* self, const BLRectI* rect)
+extern fn BLResult fill_rect_i(BLContextCore* context, BLRectI* rect) @extern("blContextFillRectI");
+
+// BLResult blContextSetFillStyleRgba(BLContextCore* self, const BLRgba* rgba)
+extern fn BLResult set_fill_style_rgba(BLContextCore* context, BLRgba* rgba) @extern("blContextSetFillStyleRgba");
