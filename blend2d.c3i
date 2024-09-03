@@ -8,8 +8,20 @@ const BLResult BL_SUCCESS = 0;
 
 
 def BLObjectDetail = CChar[16];
-def BLArrayCore = void;
 
+
+struct BLArrayCore {
+    BLObjectDetail data;
+}
+
+// size_t blArrayGetSize(const BLArrayCore* self)
+extern fn usz array_get_size(BLArrayCore* array) @extern("blArrayGetSize");
+
+// const void* blArrayGetData(const BLArrayCore* self)
+extern fn void* array_get_data(BLArrayCore* array) @extern("blArrayGetData");
+
+// BLResult blArrayInit(BLArrayCore* self, BLObjectType arrayType)
+extern fn BLResult array_init(BLArrayCore* array, CUInt arrayType) @extern("blArrayInit");
 
 struct BLSizeI {
   CInt w;
@@ -95,6 +107,58 @@ struct BLContextCreateInfo {
     CUInt[1] reserved;
 }
 
+/// Text API
+
+struct BLFontCore {
+    BLObjectDetail data;
+}
+
+struct BLFontDataCore {
+    BLObjectDetail data;
+}
+
+struct BLFontFaceCore {
+    BLObjectDetail data;
+}
+
+struct BLFontFeatureSettingsCore {
+    BLObjectDetail data;
+}
+
+struct BLFontManagerCore {
+    BLObjectDetail data;
+}
+
+struct BLFontVariationSettingsCore {
+    BLObjectDetail data;
+}
+
+struct BLGlyphBufferCore {
+    BLObjectDetail data;
+}
+
+struct BLFontQueryProperties {
+    CUInt style;
+    CUInt weight;
+    CUInt stretch;
+}
+
+distinct BLTextEncoding = CUInt;
+const BL_TEXT_ENCODING_UTF8 = 0;
+const BL_TEXT_ENCODING_UTF16 = 1;
+const BL_TEXT_ENCODING_UTF32 = 2;
+const BL_TEXT_ENCODING_LATIN1 = 3;
+const BL_TEXT_ENCODING_WCHAR = 4;
+const BL_TEXT_ENCODING_MAX_VALUE = 5;
+
+/// Filesystem API
+
+distinct BLFileReadFlags = CUInt;
+const BL_FILE_READ_NO_FLAGS = 0;
+const BL_FILE_READ_MMAP_ENABLED = 1;
+const BL_FILE_READ_MMAP_AVOID_SMALL = 2;
+const BL_FILE_READ_MMAP_NO_FALLBACK = 3;
+
 
 
 /// -----------------------------
@@ -136,6 +200,50 @@ extern fn BLResult find_by_extension(BLImageCodecCore* codec, ZString name, usz 
 
 
 
+
+/// -----------------------------
+///       Text API
+/// -----------------------------
+
+
+module blend2d::font;
+/// Font
+// BLResult blFontInit(BLFontCore* self)
+extern fn BLResult init(BLFontCore* font) @extern("blFontInit");
+
+// BLResult blFontCreateFromFace(BLFontCore* self, const BLFontFaceCore* face, float size)
+extern fn BLResult create_from_face(BLFontCore* font, BLFontFaceCore* face, float size) @extern("blFontCreateFromFace");
+
+// BLResult blFontCreateFromFaceWithSettings(BLFontCore* self, const BLFontFaceCore* face, float size, const BLFontFeatureSettingsCore* featureSettings, const BLFontVariationSettingsCore* variationSettings)
+extern fn BLResult create_from_face_with_settings(BLFontCore* font, BLFontFaceCore* face, float size, BLFontFeatureSettingsCore* featureSettings, BLFontVariationSettingsCore* variationSettings) @extern("blFontCreateFromFaceWithSettings");
+
+
+module blend2d::font_face;
+/// Font face
+// BLResult blFontFaceInit(BLFontFaceCore* self)
+extern fn BLResult init(BLFontFaceCore* font_face) @extern("blFontFaceInit");
+
+// BLResult blFontFaceCreateFromFile(BLFontFaceCore* self, const char* fileName, BLFileReadFlags readFlags)
+extern fn BLResult create_from_file(BLFontFaceCore* font_face, ZString fileName, BLFileReadFlags readFlags) @extern("blFontFaceCreateFromFile");
+
+
+module blend2d::font_manager;
+/// Font Manager
+// BLResult blFontManagerInit(BLFontManagerCore* self)
+extern fn BLResult init(BLFontManagerCore* font_manager) @extern("blFontManagerInit");
+
+// BLResult blFontManagerCreate(BLFontManagerCore* self)
+extern fn BLResult create(BLFontManagerCore* font_manager) @extern("blFontManagerCreate");
+
+// BLResult blFontManagerAddFace(BLFontManagerCore* self, const BLFontFaceCore* face)
+extern fn BLResult add_face(BLFontManagerCore* font_manager, BLFontFaceCore* face) @extern("blFontManagerAddFace");
+
+// BLResult blFontManagerQueryFace(const BLFontManagerCore* self, const char* name, size_t nameSize, const BLFontQueryProperties* properties, BLFontFaceCore* out)
+extern fn BLResult query_face(BLFontManagerCore* font_manager, ZString name, usz name_size, BLFontQueryProperties* properties, BLFontFaceCore* out) @extern("blFontManagerQueryFace");
+
+// BLResult blFontManagerQueryFacesByFamilyName(const BLFontManagerCore* self, const char* name, size_t nameSize, BLArrayCore* out)
+extern fn BLResult query_faces_by_family_name(BLFontManagerCore* font_manager, ZString name, usz name_size, BLArrayCore* out) @extern("blFontManagerQueryFacesByFamilyName");
+
 /// -----------------------------
 ///       Rendering Context
 /// -----------------------------
@@ -161,3 +269,7 @@ extern fn BLResult fill_rect_i(BLContextCore* context, BLRectI* rect) @extern("b
 
 // BLResult blContextSetFillStyleRgba(BLContextCore* self, const BLRgba* rgba)
 extern fn BLResult set_fill_style_rgba(BLContextCore* context, BLRgba* rgba) @extern("blContextSetFillStyleRgba");
+
+
+// BLResult blContextFillUtf8TextI(BLContextCore* self, const BLPointI* origin, const BLFontCore* font, const char* text, size_t size)
+extern fn BLResult fill_utf8_text_i(BLContextCore* context, BLPointI* origin, BLFontCore* font, ZString text, usz size) @extern("blContextFillUtf8TextI");
